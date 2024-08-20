@@ -68,12 +68,12 @@ from src.backend.Logger import Logger, LoggerConfig, Loglevel
 from src.backend.Migration.MigrationManager import MigrationManager
 from src.backend.Migration.Migrators.Migrator_1_5_0 import Migrator_1_5_0
 from src.backend.Migration.Migrators.Migrator_1_5_0_beta_5 import Migrator_1_5_0_beta_5
+from src.backend.Migration.Migrators.Migrator_xdg import Migrator_xdg
 
 # Import globals
 import globals as gl
 
 # Define constants
-DEFAULT_DATA_PATH = os.path.expanduser("~/.var/app/com.core447.StreamController/data")
 MAX_REASONABLE_X = 10
 MAX_REASONABLE_Y = 10
 
@@ -87,7 +87,7 @@ def write_logs(record):
 def config_logger():
     log.remove()
     # Create log files
-    log.add(os.path.join(gl.DATA_PATH, "logs/logs.log"), rotation="3 days", backtrace=True, diagnose=True, level="TRACE")
+    log.add(os.path.join(gl.CACHE_PATH, "logs/logs.log"), rotation="3 days", backtrace=True, diagnose=True, level="TRACE")
     # Set min level to print
     log.add(sys.stderr, level="TRACE")
     log.add(write_logs, level="TRACE")
@@ -95,7 +95,7 @@ def config_logger():
     plugin_logger = Logger(
         LoggerConfig(
             name="PLUGIN",
-            log_file_path=os.path.join(gl.DATA_PATH, "logs/plugins.log"),
+            log_file_path=os.path.join(gl.CACHE_PATH, "logs/plugins.log"),
             base_log_level="TRACE",
             rotation="3 days",
             retention=None,
@@ -131,8 +131,10 @@ def load():
     gl.main = Main(application_id="com.core447.StreamController", deck_manager=gl.deck_manager)
 
 @log.catch
-def create_cache_folder():
-    os.makedirs(os.path.join(gl.DATA_PATH, "cache"), exist_ok=True)
+def create_xdg_folders():
+    os.makedirs(gl.CONFIG_PATH, exist_ok=True)
+    os.makedirs(gl.DATA_PATH, exist_ok=True)
+    os.makedirs(gl.CACHE_PATH, exist_ok=True)
 
 def create_global_objects():
     # Setup locales
@@ -180,7 +182,7 @@ def create_global_objects():
 
 @log.catch
 def update_assets():
-    settings = gl.settings_manager.load_settings_from_file(os.path.join(gl.DATA_PATH, "settings", "settings.json"))
+    settings = gl.settings_manager.load_settings_from_file(gl.APP_SETTINGS_FILE)
     auto_update = settings.get("store", {}).get("auto-update", True)
 
     if gl.argparser.parse_args().devel:
@@ -362,8 +364,7 @@ def handle_listing_commands():
         try:
             # Try to get pages from the file system
             import os
-            data_path = gl.DATA_PATH if hasattr(gl, 'DATA_PATH') else DEFAULT_DATA_PATH
-            pages_dir = os.path.join(data_path, "pages")
+            pages_dir = os.path.join(gl.CONFIG_PATH, "pages")
             
             if not os.path.exists(pages_dir):
                 print(f"Pages directory not found: {pages_dir}")
@@ -560,6 +561,7 @@ def main():
     # Add migrators
     migration_manager.add_migrator(Migrator_1_5_0())
     migration_manager.add_migrator(Migrator_1_5_0_beta_5())
+    migration_manager.add_migrator(Migrator_xdg())
     # Run migrators
     migration_manager.run_migrators()
 
@@ -569,7 +571,7 @@ def main():
     auto_start = app_settings.get("system", {}).get("autostart", True)
     setup_autostart(auto_start)
     
-    create_cache_folder()
+    create_xdg_folders()
     threading.Thread(target=update_assets, name="update_assets").start()
     load()
 

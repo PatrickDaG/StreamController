@@ -72,7 +72,7 @@ class StreamDeckUIImporter:
             preferences["screensaver"]["time-delay"] = self.export["state"][deck].get("display_timeout", 5*60)//60
             preferences["screensaver"]["brightness"] = self.export["state"][deck].get("brightness_dimmed", 0)
 
-            self.save_json(os.path.join(gl.DATA_PATH, "settings", "decks", f"{deck}.json"), preferences)
+            self.save_json(os.path.join(gl.DECKS_PATH, f"{deck}.json"), preferences)
 
             for page_name in self.export["state"][deck].get("buttons", {}):
                 ## Keys
@@ -125,7 +125,7 @@ class StreamDeckUIImporter:
                         export_switch_page = self.export["state"][deck]["buttons"][page_name][button]["states"][export_state].get("switch_page")
                         if str(export_switch_page) != str(int(page_name)+1) and export_switch_page not in [0, "0", None, ""]:
                             if export_switch_page not in [None, ""]:
-                                page_path = os.path.join(gl.DATA_PATH, "pages", f"ui_{deck}_{export_switch_page}.json")
+                                page_path = os.path.join(gl.CONFIG_PATH, "pages", f"ui_{deck}_{export_switch_page}.json")
                                 action = {
                                     "id": "com_core447_DeckPlugin::ChangePage",
                                     "settings": {
@@ -197,7 +197,7 @@ class StreamDeckUIImporter:
                             page["keys"][coords]["states"][page_state]["actions"].append(action)
 
 
-                page_path = os.path.join(gl.DATA_PATH, "pages", f"ui_{deck}_{int(page_name) + 1}.json")
+                page_path = os.path.join(gl.CONFIG_PATH, "pages", f"ui_{deck}_{int(page_name) + 1}.json")
                 self.save_json(page_path, page)
                 # gl.signal_manager.trigger_signal(Signals.PageAdd, page_path) # We don't trigger the action to save ressources
                 # time.sleep(0.005) # Otherwise the app can't hold up - The problem is the signal call, but is is necessary to 

@@ -29,7 +29,7 @@ class Migrator_1_5_0_beta_5(Migrator):
         self.set_migrated(True)
 
     def migrate_pages(self):
-        pages_dir = os.path.join(gl.DATA_PATH, "pages")
+        pages_dir = os.path.join(gl.CONFIG_PATH, "pages")
         if not os.path.exists(pages_dir):
             return
         
@@ -69,7 +69,7 @@ class Migrator_1_5_0_beta_5(Migrator):
             except Exception as e:
                 continue
 
-            new_settings_path = os.path.join(gl.DATA_PATH, "settings", "plugins", plugin_dir_name, "settings.json")
+            new_settings_path = os.path.join(gl.PLUGIN_SETTINGS_PATH, plugin_dir_name, "settings.json")
             if os.path.exists(new_settings_path):
                 with open(new_settings_path, "w") as f:
                     json.dump(settings, f, indent=4)

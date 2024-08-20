@@ -70,7 +70,7 @@ class AssetManagerBackend(list):
             return id
         
         # Copy asset to internal folder if it does not exist
-        if not file_in_dir(os.path.basename(asset_path), os.path.join(gl.DATA_PATH, "cache")):
+        if not file_in_dir(os.path.basename(asset_path), gl.CACHE_PATH):
             internal_path = self.copy_asset(asset_path)
         
         thumbnail_path = internal_path
@@ -251,9 +251,9 @@ class AssetManagerBackend(list):
                 GLib.idle_add(dial.show)
                 return -1
 
-            os.makedirs(os.path.join(gl.DATA_PATH, "cache", "downloads"), exist_ok=True)
+            os.makedirs(os.path.join(gl.CACHE_PATH, "downloads"), exist_ok=True)
             # Download file from url
-            path = download_file(url=url, path=os.path.join(gl.DATA_PATH, "cache", "downloads"))
+            path = download_file(url=url, path=os.path.join(gl.CACHE_PATH, "downloads"))
 
         if path == None:
             return

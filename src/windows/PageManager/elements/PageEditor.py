@@ -178,7 +178,7 @@ class NameGroup(PageEditorGroup):
         self.name_entry.set_text(page_name)
 
         base_path = os.path.dirname(page_path)
-        is_user_page = base_path == os.path.join(gl.DATA_PATH, "pages")
+        is_user_page = base_path == os.path.join(gl.CONFIG_PATH, "pages")
 
         self.set_sensitive(is_user_page)
 

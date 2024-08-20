@@ -152,14 +152,14 @@ class App(Adw.Application):
     def show_onboarding(self):
         if gl.argparser.parse_args().b:
             return
-        if os.path.exists(os.path.join(gl.DATA_PATH, ".skip-onboarding")):
+        if os.path.exists(os.path.join(gl.CONFIG_PATH, ".skip-onboarding")):
             return
 
         self.onboarding = OnboardingWindow(application=self, main_win=self.main_win)
         self.onboarding.present(self.main_win)
 
         # Disable onboarding for future sessions
-        with open(os.path.join(gl.DATA_PATH, ".skip-onboarding"), "w") as f:
+        with open(os.path.join(gl.CONFIG_PATH, ".skip-onboarding"), "w") as f:
             f.write("")
 
     def show_permissions(self):
@@ -168,7 +168,7 @@ class App(Adw.Application):
         portal = Xdp.Portal.new()
         if not portal.running_under_flatpak():
             return
-        if os.path.exists(os.path.join(gl.DATA_PATH, ".skip-permissions")):
+        if os.path.exists(os.path.join(gl.CONFIG_PATH, ".skip-permissions")):
             return
         self.permissions = FlatpakPermissionRequestWindow(application=self, main_window=self.main_win)
         if hasattr(self, "onboarding"):

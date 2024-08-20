@@ -183,7 +183,7 @@ class HeaderHamburgerMenuButton(Gtk.MenuButton):
         )
 
         self.about.set_debug_info("".join(gl.logs))
-        self.about.set_debug_info_filename(os.path.join(gl.DATA_PATH, "StreamController.log"))
+        self.about.set_debug_info_filename(os.path.join(gl.CACHE_PATH, "StreamController.log"))
 
         self.about.set_release_notes(gl.release_notes)  
         self.about.set_release_notes_version(gl.app_version)

@@ -99,10 +99,10 @@ class Page:
         self.file_access_semaphore.release()
 
     def make_backup(self):
-        os.makedirs(os.path.join(gl.DATA_PATH, "pages","backups"), exist_ok=True)
+        os.makedirs(os.path.join(gl.CONFIG_PATH, "pages","backups"), exist_ok=True)
 
         src_path = self.json_path
-        dst_path = os.path.join(gl.DATA_PATH, "pages","backups", os.path.basename(src_path))
+        dst_path = os.path.join(gl.CONFIG_PATH, "pages","backups", os.path.basename(src_path))
 
         # Check if json in src is valid
         with open(src_path) as f:

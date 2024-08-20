@@ -32,45 +32,91 @@ argparser.add_argument("app_args", nargs="*")
 
 MAIN_PATH: str
 VAR_APP_PATH = os.path.join(os.path.expanduser("~"), ".var", "app", "com.core447.StreamController")
-STATIC_SETTINGS_FILE_PATH = os.path.join(VAR_APP_PATH, "static", "settings.json")
+LEGACY_STATIC_SETTINGS_FILE_PATH = os.path.join(VAR_APP_PATH, "static", "settings.json")
+LEGACY_DATA_PATH = os.path.join(VAR_APP_PATH, "data")
 
-DATA_PATH = os.path.join(VAR_APP_PATH, "data") # Maybe use XDG_DATA_HOME instead
+HOME = os.getenv("HOME")
+if HOME == None:
+    log.error("$HOME not set.")
+    exit(1)
+USE_LEGACY_DATA_PATH = False
+# TODO: use glib functions
+CONFIG_PATH = os.path.join(os.getenv("XDG_CONFIG_HOME", f"{HOME}/.config"), "streamcontroller")
+DATA_PATH = os.path.join(os.getenv("XDG_DATA_HOME", f"{HOME}/.local/share"), "streamcontroller")
+PLUGIN_DIR = os.path.join(os.getenv("XDG_DATA_HOME", f"{HOME}/.local/share"), "streamcontroller/plugins")
+CACHE_PATH = os.path.join(os.getenv("XDG_CACHE_HOME", f"{HOME}/.cache"), "streamcontroller")
+
+STATIC_SETTINGS_FILE_PATH = os.path.join(CONFIG_PATH, "settings.json")
+
+# Check for custom data path from command line or static settings
+static_settings = None
 if argparser.parse_args().data:
-    DATA_PATH = argparser.parse_args().data
+    LEGACY_DATA_PATH = argparser.parse_args().data
+    USE_LEGACY_DATA_PATH = True
 elif not argparser.parse_args().devel:
-    # Check static settings
+    # Check new XDG static settings location first
     if os.path.exists(STATIC_SETTINGS_FILE_PATH):
         try:
             with open(STATIC_SETTINGS_FILE_PATH) as f:
-                settings = json.load(f)
-                if "data-path" in settings:
-                    DATA_PATH = settings["data-path"]
-            log.info(f"Using data path from static settings: {DATA_PATH}")
+                static_settings = json.load(f)
+                if "data-path" in static_settings:
+                    LEGACY_DATA_PATH = static_settings["data-path"]
+                    USE_LEGACY_DATA_PATH = True
+            log.info(f"Using data path from static settings: {LEGACY_DATA_PATH}")
         except Exception as e:
             log.error(f"Failed to set data path from static settings: {e}")
 
-if not os.path.exists(DATA_PATH):
-    log.info(f"Creating data path: {DATA_PATH}")
+    # Check legacy static settings location for existing users
+    if not static_settings and os.path.exists(LEGACY_STATIC_SETTINGS_FILE_PATH):
+        try:
+            with open(LEGACY_STATIC_SETTINGS_FILE_PATH) as f:
+                static_settings = json.load(f)
+                if "data-path" in static_settings:
+                    LEGACY_DATA_PATH = static_settings["data-path"]
+                    USE_LEGACY_DATA_PATH = True
+            log.info(f"Using data path from legacy static settings: {LEGACY_DATA_PATH}")
+        except Exception as e:
+            log.error(f"Failed to set data path from legacy static settings: {e}")
+
+if USE_LEGACY_DATA_PATH and not os.path.exists(LEGACY_DATA_PATH):
+    log.info(f"Creating data path: {LEGACY_DATA_PATH}")
     try:
-        os.makedirs(DATA_PATH)
+        os.makedirs(LEGACY_DATA_PATH)
     except Exception as e:
-        log.error(f"Failed to create data path: {e}\nPlease change the data path manually in the config file under {STATIC_SETTINGS_FILE_PATH}")
+        log.error(f"Failed to create data path: {e}\nPlease change the data path manually in the config file under {LEGACY_STATIC_SETTINGS_FILE_PATH}")
         sys.exit(1)
 
-PLUGIN_DIR = os.path.join(DATA_PATH, "plugins")
+if USE_LEGACY_DATA_PATH:
+    # Override all XDG paths to point to legacy location
+    CONFIG_PATH = LEGACY_DATA_PATH
+    DATA_PATH = LEGACY_DATA_PATH
+    PLUGIN_DIR = os.path.join(LEGACY_DATA_PATH, "plugins")
+    CACHE_PATH = os.path.join(LEGACY_DATA_PATH, "cache")
+    # Legacy paths include 'settings/' subfolder
+    DECKS_PATH = os.path.join(LEGACY_DATA_PATH, "settings", "decks")
+    PLUGIN_SETTINGS_PATH = os.path.join(LEGACY_DATA_PATH, "settings", "plugins")
+    UI_SETTINGS_PATH = os.path.join(LEGACY_DATA_PATH, "settings", "ui")
+    APP_SETTINGS_FILE = os.path.join(LEGACY_DATA_PATH, "settings", "settings.json")
+    PAGES_SETTINGS_FILE = os.path.join(LEGACY_DATA_PATH, "settings", "pages.json")
+    MIGRATIONS_FILE = os.path.join(LEGACY_DATA_PATH, "settings", "migrations.json")
+else:
+    # XDG paths - flattened structure without 'settings/' subfolder
+    DECKS_PATH = os.path.join(CONFIG_PATH, "decks")
+    PLUGIN_SETTINGS_PATH = os.path.join(CONFIG_PATH, "plugins")
+    UI_SETTINGS_PATH = os.path.join(CONFIG_PATH, "ui")
+    APP_SETTINGS_FILE = os.path.join(CONFIG_PATH, "settings.json")
+    PAGES_SETTINGS_FILE = os.path.join(CONFIG_PATH, "pages.json")
+    MIGRATIONS_FILE = os.path.join(CONFIG_PATH, "migrations.json")
 # Used for nix packaging
 if os.getenv("PLUGIN_DIR") is not None:
     PLUGIN_DIR = os.getenv("PLUGIN_DIR")
     top_level_folder = os.path.dirname(PLUGIN_DIR)
     sys.path.append(top_level_folder)
 
-    if os.path.exists(os.path.join(DATA_PATH, "plugins")):
+    if os.path.exists(os.path.join(LEGACY_DATA_PATH, "plugins")):
         log.warning(f"You're using a plugin dir path outside of your data dir, but also have a plugin dir in the data dir. This may cause problems.")
 
 os.makedirs(PLUGIN_DIR, exist_ok=True)
-
-# Add data path to sys.path
-sys.path.append(DATA_PATH)
 
 if TYPE_CHECKING:
     from src.app import App

@@ -52,8 +52,8 @@ class PageManagerBackend:
         self.page_number = 0
 
         self.MAX_BACKUPS = 5
-        self.PAGE_PATH = os.path.join(gl.DATA_PATH, "pages")
-        self.PAGE_SETTINGS_PATH = os.path.join(gl.DATA_PATH, "settings", "pages.json")
+        self.PAGE_PATH = os.path.join(gl.CONFIG_PATH, "pages")
+        self.PAGE_SETTINGS_PATH = gl.PAGES_SETTINGS_FILE
 
     def load_page(self, path: str, deck_controller: "DeckController") -> Page:
         """
@@ -221,7 +221,7 @@ class PageManagerBackend:
         #self.update_auto_change_info()
 
     def remove_page(self, page_path: str):
-        settings_path = os.path.join(gl.DATA_PATH, "settings", "pages.json")
+        settings_path = gl.PAGES_SETTINGS_FILE
         settings = gl.settings_manager.load_settings_from_file(settings_path)
         default_pages = settings.get("default-pages", {})
 

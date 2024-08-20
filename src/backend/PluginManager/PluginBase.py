@@ -51,7 +51,7 @@ class PluginBase(rpyc.Service):
         self.logger = gl.loggers.get("plugins", None)
 
         self.PATH = os.path.dirname(inspect.getfile(self.__class__))
-        self.settings_path: str = os.path.join(gl.DATA_PATH, "settings", "plugins", self.get_plugin_id_from_folder_name(), "settings.json") #TODO: Retrive from the manifest as well
+        self.settings_path: str = os.path.join(gl.PLUGIN_SETTINGS_PATH, self.get_plugin_id_from_folder_name(), "settings.json") #TODO: Retrive from the manifest as well
 
         if use_legacy_locale:
             self.locale_manager = LegacyLocaleManager(os.path.join(self.PATH, legacy_dir))

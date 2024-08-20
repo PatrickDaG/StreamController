@@ -36,13 +36,13 @@ class Migrator_1_5_0(Migrator):
         self.set_migrated(True)
 
     def migrate_deck_settings(self):
-        path = os.path.join(gl.DATA_PATH, "settings", "decks")
+        path = gl.DECKS_PATH
         if not os.path.exists(path):
             return
         for deck_path in os.listdir(path):
             if not deck_path.endswith(".json"):
                 continue
-            deck_path = os.path.join(gl.DATA_PATH, "settings", "decks", deck_path)
+            deck_path = os.path.join(gl.DECKS_PATH, deck_path)
             with open(deck_path, "r") as f:
                 deck = json.load(f)
 
@@ -66,7 +66,7 @@ class Migrator_1_5_0(Migrator):
                 json.dump(deck, f, indent=4)
 
     def migrate_pages(self):
-        pages_dir = os.path.join(gl.DATA_PATH, "pages")
+        pages_dir = os.path.join(gl.CONFIG_PATH, "pages")
         if not os.path.exists(pages_dir):
             return
         
