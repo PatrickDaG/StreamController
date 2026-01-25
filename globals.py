@@ -107,14 +107,12 @@ else:
     APP_SETTINGS_FILE = os.path.join(CONFIG_PATH, "settings.json")
     PAGES_SETTINGS_FILE = os.path.join(CONFIG_PATH, "pages.json")
     MIGRATIONS_FILE = os.path.join(CONFIG_PATH, "migrations.json")
-# Used for nix packaging
-if os.getenv("PLUGIN_DIR") is not None:
-    PLUGIN_DIR = os.getenv("PLUGIN_DIR")
-    top_level_folder = os.path.dirname(PLUGIN_DIR)
-    sys.path.append(top_level_folder)
 
-    if os.path.exists(os.path.join(LEGACY_DATA_PATH, "plugins")):
-        log.warning(f"You're using a plugin dir path outside of your data dir, but also have a plugin dir in the data dir. This may cause problems.")
+top_level_folder = os.path.dirname(PLUGIN_DIR)
+sys.path.append(top_level_folder)
+
+if os.path.exists(os.path.join(LEGACY_DATA_PATH, "plugins")):
+    log.warning(f"You're using a plugin dir path outside of your data dir, but also have a plugin dir in the data dir. This may cause problems.")
 
 os.makedirs(PLUGIN_DIR, exist_ok=True)
 
